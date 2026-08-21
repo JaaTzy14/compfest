@@ -1,8 +1,6 @@
 from fastapi import FastAPI
+from app.api.optimize import router as optimize_router
 
 app = FastAPI()
 
-
-@app.get("/")
-def root():
-    return {"message": "Hello World"}
+app.include_router(optimize_router)
