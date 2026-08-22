@@ -2,3 +2,5 @@ fastapi[standard]
 pandas
 pulp
 pyarrow
+openpyxl
+requests
