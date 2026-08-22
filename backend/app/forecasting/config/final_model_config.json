@@ -1,6 +1,6 @@
 {
   "seed": 42,
-  "origin_date": "2026-08-13",
+  "origin_date": "2026-08-22",
   "interval_coverage": 0.9,
   "min_commodity_calibration_n": 30,
   "max_allowed_anchor_age_days": 7,
