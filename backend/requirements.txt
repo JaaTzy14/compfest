@@ -4,3 +4,5 @@ pulp
 pyarrow
 openpyxl
 requests
+catboost
+lightgbm
