@@ -1,1 +1,4 @@
 fastapi[standard]
+pandas
+pulp
+pyarrow
