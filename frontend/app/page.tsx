@@ -10,14 +10,38 @@ const CATALOG = [
   { id: 22, name: "Tomat Buah", icon: "🍅" },
 ];
 
+type PlanLine = {
+  commodity: string;
+  market_name: string;
+  target_date: string;
+  qty_kg: number;
+  expected_price_per_kg?: number;
+};
+
+type PlanResult = {
+  lines?: PlanLine[];
+  purchase_cost?: number;
+  transport_cost?: number;
+  total_expected_cost?: number;
+  worst_case_total_cost?: number;
+  estimated_saving_vs_baseline?: number;
+  estimated_saving_pct?: number;
+  alternative_plans?: {
+    cheapest?: PlanResult;
+    low_risk?: PlanResult;
+  };
+};
+
 export default function Home() {
   // Menggunakan koordinat array langsung sesuai format backend [-6.2, 106.8]
   const [location, setLocation] = useState<[number, number]>([-6.2, 106.8]);
   const [deadline, setDeadline] = useState('2026-08-20');
   const [strategy, setStrategy] = useState('Balanced');
   
-  const [planResult, setPlanResult] = useState<any>(null);
+  const [planResult, setPlanResult] = useState<PlanResult | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
 
   const [items, setItems] = useState([
     { id: 8, name: "Cabe Merah Keriting", qty: 10, icon: "🌶️" },
@@ -81,7 +105,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json();
         console.log("Respons dari backend:", data);
-        setPlanResult(data);
+        setPlanResult(data as PlanResult);
         setShowResult(true);
       } else {
         const errorData = await response.json();
@@ -89,6 +113,34 @@ export default function Home() {
       }
     } catch (error) {
       console.error("Terjadi kesalahan jaringan:", error);
+    }
+  };
+
+  const handleRefreshData = async () => {
+    setIsRefreshing(true);
+    setRefreshStatus(null);
+
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setRefreshStatus(
+          `Forecast updated: ${data.forecast_start_date} - ${data.forecast_end_date}`
+        );
+      } else {
+        setRefreshStatus(data.detail || 'Refresh failed');
+      }
+    } catch (error) {
+      console.error("Terjadi kesalahan refresh:", error);
+      setRefreshStatus('Network error while refreshing');
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -109,10 +161,25 @@ export default function Home() {
           <h1 className="text-2xl font-bold tracking-widest text-[#8c5a45]">LOGO / PRODUCT NAME</h1>
           <p className="text-gray-700 mt-2 text-lg">Smarter Food Procurement</p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex items-center space-x-4">
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={handleRefreshData}
+              disabled={isRefreshing}
+              className="bg-[#8c5a45] border-2 border-[#8c5a45] px-4 py-2 text-white hover:bg-[#c59c84] hover:border-[#c59c84] disabled:opacity-60 disabled:cursor-not-allowed transition-colors rounded-lg text-sm font-bold shadow-md"
+            >
+              {isRefreshing ? '[ Refreshing... ]' : '[ Refresh Data ]'}
+            </button>
+            {refreshStatus && (
+              <p className="mt-2 text-xs text-gray-600 max-w-64">{refreshStatus}</p>
+            )}
+          </div>
+          <div className="flex space-x-2">
             <span className="text-3xl">🌶️</span>
             <span className="text-3xl">🧅</span>
             <span className="text-3xl">🧺</span>
+          </div>
         </div>
       </header>
 
@@ -265,7 +332,7 @@ export default function Home() {
             </div>
 
             <div className="border-l-4 border-[#e6c1a8] pl-5 space-y-4">
-              {activePlan?.lines?.map((line: any, idx: number) => (
+              {activePlan?.lines?.map((line: PlanLine, idx: number) => (
                 <div key={idx} className="flex justify-between items-center bg-[#fefcf8] p-3 rounded-lg border border-[#e6c1a8]">
                   <div className="flex items-center space-x-3">
                       <span>🛒</span>
