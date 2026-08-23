@@ -33,9 +33,9 @@ type PlanResult = {
 };
 
 export default function Home() {
-  // Menggunakan koordinat array langsung sesuai format backend [-6.2, 106.8]
-  const [location, setLocation] = useState<[number, number]>([-6.2, 106.8]);
-  const [deadline, setDeadline] = useState('2026-08-20');
+  // Mengosongkan form di awal:
+  const [location, setLocation] = useState<[number | string, number | string]>(['', '']);
+  const [deadline, setDeadline] = useState('');
   const [strategy, setStrategy] = useState('Balanced');
   
   const [planResult, setPlanResult] = useState<PlanResult | null>(null);
@@ -43,10 +43,7 @@ export default function Home() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshStatus, setRefreshStatus] = useState<string | null>(null);
 
-  const [items, setItems] = useState([
-    { id: 8, name: "Cabe Merah Keriting", qty: 10, icon: "🌶️" },
-    { id: 10, name: "Cabe Rawit Merah", qty: 5, icon: "🌶️" }
-  ]);
+  const [items, setItems] = useState<Array<{ id: number; name: string; qty: number; icon: string }>>([]);
 
   const handleAddItem = () => {
     setItems([...items, { id: CATALOG[0].id, name: CATALOG[0].name, qty: 1, icon: CATALOG[0].icon }]);
@@ -89,7 +86,7 @@ export default function Home() {
       allow_split: false,
       commodities: mappedCommodities,
       deadline: deadline,
-      location: location, // Mengirim array [lat, lon] dengan benar
+      location: [Number(location[0]) || 0, Number(location[1]) || 0],
       max_markets: 2,
       max_trips: 2,
       risk_aversion: riskAversionValue
@@ -155,231 +152,272 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fcf8f0] text-gray-900 p-8 font-mono">
-      <header className="mb-10 border-b-2 border-dashed border-[#e6c1a8] pb-4 flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      {/* HEADER */}
+      <header className="bg-white border-b border-gray-200 shadow-sm px-8 py-4 flex items-center justify-between sticky top-0 z-20">
         <div>
-          <h1 className="text-2xl font-bold tracking-widest text-[#8c5a45]">LOGO / PRODUCT NAME</h1>
-          <p className="text-gray-700 mt-2 text-lg">Smarter Food Procurement</p>
+          <h1 className="text-xl font-bold tracking-tight text-gray-900 flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-600 text-white text-sm font-bold">P</span>
+            ProcureAI
+          </h1>
+          <p className="text-gray-500 text-sm mt-0.5">Smarter Food Procurement</p>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-red-50 text-base">🌶️</span>
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-50 text-base">🧅</span>
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-orange-50 text-base">🧺</span>
+          </div>
           <div className="text-right">
             <button
               type="button"
               onClick={handleRefreshData}
               disabled={isRefreshing}
-              className="bg-[#8c5a45] border-2 border-[#8c5a45] px-4 py-2 text-white hover:bg-[#c59c84] hover:border-[#c59c84] disabled:opacity-60 disabled:cursor-not-allowed transition-colors rounded-lg text-sm font-bold shadow-md"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-sm"
             >
-              {isRefreshing ? '[ Refreshing... ]' : '[ Refresh Data ]'}
+              <svg xmlns="http://www.w3.org/2000/svg" className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+              {isRefreshing ? 'Refreshing...' : 'Refresh Data'}
             </button>
             {refreshStatus && (
-              <p className="mt-2 text-xs text-gray-600 max-w-64">{refreshStatus}</p>
+              <p className="mt-1.5 text-xs text-gray-500 max-w-xs text-right">{refreshStatus}</p>
             )}
-          </div>
-          <div className="flex space-x-2">
-            <span className="text-3xl">🌶️</span>
-            <span className="text-3xl">🧅</span>
-            <span className="text-3xl">🧺</span>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
-        
+      <main className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+
         {/* KOLOM KIRI: YOUR PROCUREMENT */}
-        <section className="bg-white border-4 border-[#e6c1a8] p-8 rounded-xl shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
-              <span className="text-9xl">📋</span>
+        <section className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-sm">📋</span>
+            <h2 className="text-base font-semibold text-gray-800">Your Procurement</h2>
           </div>
-          <h2 className="text-xl font-bold mb-8 text-[#8c5a45] border-b-2 border-dashed border-[#e6c1a8] pb-3 relative z-10">YOUR PROCUREMENT</h2>
-          
-          <form onSubmit={handleFindPlan} className="space-y-7 relative z-10">
+
+          <form onSubmit={handleFindPlan} className="p-6 space-y-6">
+            {/* Location */}
             <div>
-              <label className="block mb-2 text-sm text-gray-600">Location Coordinates [Lat, Lon]</label>
-              <div className="flex space-x-2">
-                <input 
-                  type="number" 
-                  step="any"
-                  value={location[0]}
-                  onChange={(e) => setLocation([parseFloat(e.target.value) || 0, location[1]])}
-                  className="w-1/2 bg-[#fcf8f0] border-2 border-[#e6c1a8] p-3 text-gray-900 focus:outline-none focus:border-[#c59c84] rounded-lg font-bold" 
-                  placeholder="Latitude"
-                />
-                <input 
-                  type="number" 
-                  step="any"
-                  value={location[1]}
-                  onChange={(e) => setLocation([location[0], parseFloat(e.target.value) || 0])}
-                  className="w-1/2 bg-[#fcf8f0] border-2 border-[#e6c1a8] p-3 text-gray-900 focus:outline-none focus:border-[#c59c84] rounded-lg font-bold" 
-                  placeholder="Longitude"
-                />
+              <label className="block mb-1.5 text-sm font-medium text-gray-700">Location Coordinates</label>
+              <div className="flex gap-2">
+                <div className="relative w-1/2">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">Lat</span>
+                  <input
+                    type="number"
+                    step="any"
+                    value={location[0]}
+                    onChange={(e) => setLocation([parseFloat(e.target.value) || 0, location[1]])}
+                    className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    placeholder="Latitude"
+                  />
+                </div>
+                <div className="relative w-1/2">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">Lon</span>
+                  <input
+                    type="number"
+                    step="any"
+                    value={location[1]}
+                    onChange={(e) => setLocation([location[0], parseFloat(e.target.value) || 0])}
+                    className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                    placeholder="Longitude"
+                  />
+                </div>
               </div>
             </div>
 
+            {/* Shopping List */}
             <div>
-              <label className="block mb-2 text-sm text-gray-600">Shopping List</label>
-              <div className="space-y-4 mb-5 border-l-4 border-[#e6c1a8] pl-5">
-                
+              <label className="block mb-1.5 text-sm font-medium text-gray-700">Shopping List</label>
+              <div className="space-y-2 mb-3">
                 {items.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center bg-[#fefcf8] p-3 rounded-lg border border-[#e6c1a8]">
-                    <div className="flex items-center space-x-3 w-1/2">
-                      <span className="text-2xl">{item.icon}</span>
-                      <select 
-                        value={item.id}
-                        onChange={(e) => handleItemChange(index, e.target.value)}
-                        className="bg-transparent font-semibold text-lg focus:outline-none w-full text-gray-900 cursor-pointer"
-                      >
-                        {CATALOG.map((cat) => (
-                           <option key={cat.id} value={cat.id}>{cat.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex items-center text-lg">
-                      <span className="mr-2 text-gray-400">[</span>
-                      <input 
-                        type="number" 
+                  <div key={index} className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-white border border-gray-200 text-base shrink-0">
+                      {item.icon}
+                    </span>
+                    <select
+                      value={item.id}
+                      onChange={(e) => handleItemChange(index, e.target.value)}
+                      className="flex-1 bg-transparent text-sm font-medium text-gray-800 focus:outline-none cursor-pointer"
+                    >
+                      {CATALOG.map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <input
+                        type="number"
                         min="1"
                         value={item.qty}
                         onChange={(e) => handleQtyChange(index, e.target.value)}
-                        className="w-12 bg-transparent text-center focus:outline-none text-gray-900 font-bold" 
+                        className="w-14 text-center bg-white border border-gray-200 rounded-md py-1 text-sm font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       />
-                      <span className="ml-2 text-gray-400">] kg</span>
-                      <button 
-                        type="button" 
+                      <span className="text-xs text-gray-500 font-medium">kg</span>
+                      <button
+                        type="button"
                         onClick={() => handleRemoveItem(index)}
-                        className="ml-4 text-red-400 hover:text-red-600 text-sm font-bold border border-red-200 rounded p-1 bg-red-50"
+                        className="ml-1 w-6 h-6 inline-flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors text-xs font-bold"
                         title="Remove Item"
                       >
-                        X
+                        ✕
                       </button>
                     </div>
                   </div>
                 ))}
-
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={handleAddItem}
-                className="text-[#8c5a45] hover:text-[#c59c84] transition-colors flex items-center space-x-2 font-bold p-2 hover:bg-[#fcf8f0] rounded-lg"
+                className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg px-3 py-1.5 transition-colors"
               >
-                  <span>🧺</span>
-                  <span>[+ Add Item]</span>
+                <span className="text-base">🧺</span>
+                Add Item
               </button>
             </div>
 
+            {/* Deadline */}
             <div>
-              <label className="block mb-2 text-sm text-gray-600">Deadline</label>
-              <input 
-                type="date" 
+              <label className="block mb-1.5 text-sm font-medium text-gray-700">Deadline</label>
+              <input
+                type="date"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full bg-[#fcf8f0] border-2 border-[#e6c1a8] p-3 text-gray-900 focus:outline-none focus:border-[#c59c84] rounded-lg font-bold" 
+                className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
               />
             </div>
 
+            {/* Strategy */}
             <div>
-              <label className="block mb-2 text-sm text-gray-600">Strategy</label>
-              <div className="space-y-3">
+              <label className="block mb-1.5 text-sm font-medium text-gray-700">Procurement Strategy</label>
+              <div className="space-y-2">
                 {[
-                  { name: 'Cheapest', icon: '💰' },
-                  { name: 'Balanced', icon: '⚖️' },
-                  { name: 'Low Risk', icon: '🛡️' },
+                  { name: 'Cheapest', icon: '💰', desc: 'Minimize cost, higher variance' },
+                  { name: 'Balanced', icon: '⚖️', desc: 'Balance cost and reliability' },
+                  { name: 'Low Risk', icon: '🛡️', desc: 'Prioritize reliability, stable pricing' },
                 ].map((opt) => (
-                  <label key={opt.name} className="flex items-center space-x-4 cursor-pointer p-3 rounded-lg border border-[#e6c1a8] hover:bg-[#fcf8f0] transition-colors">
-                    <input 
-                      type="radio" 
-                      name="strategy" 
+                  <label
+                    key={opt.name}
+                    className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition-all ${
+                      strategy === opt.name
+                        ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="strategy"
                       value={opt.name}
                       checked={strategy === opt.name}
                       onChange={(e) => setStrategy(e.target.value)}
-                      className="form-radio text-[#8c5a45] focus:ring-0 bg-transparent border-[#e6c1a8] w-5 h-5"
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
-                    <div className="flex items-center space-x-3">
-                        <span className="text-2xl">{opt.icon}</span>
-                        <span className={`text-lg ${strategy === opt.name ? 'text-[#8c5a45] font-bold' : 'text-gray-700'}`}>{opt.name}</span>
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-white border border-gray-200 text-base">
+                      {opt.icon}
+                    </span>
+                    <div>
+                      <p className={`text-sm font-semibold ${strategy === opt.name ? 'text-blue-700' : 'text-gray-800'}`}>{opt.name}</p>
+                      <p className="text-xs text-gray-500">{opt.desc}</p>
                     </div>
                   </label>
                 ))}
               </div>
             </div>
 
-            <div className="pt-8">
-              <button 
-                type="submit" 
-                className="w-full bg-[#8c5a45] border-2 border-[#8c5a45] p-4 text-center hover:bg-[#c59c84] hover:border-[#c59c84] text-white transition-colors rounded-xl text-lg font-bold shadow-md"
+            {/* Submit */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold py-3 px-6 rounded-lg text-sm transition-colors shadow-sm flex items-center justify-center gap-2"
               >
-                [ Find Best Plan ]
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+                Find Best Plan
               </button>
             </div>
           </form>
         </section>
 
         {/* KOLOM KANAN: RECOMMENDED PLAN */}
-        <section className={`bg-white border-4 border-[#e6c1a8] p-8 rounded-xl shadow-lg transition-all duration-700 relative overflow-hidden ${showResult ? 'opacity-100' : 'opacity-20'}`}>
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
-              <span className="text-9xl">🌟</span>
+        <section className={`bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden transition-all duration-700 ${showResult ? 'opacity-100' : 'opacity-40'}`}>
+          <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-amber-50 text-sm">🌟</span>
+            <h2 className="text-base font-semibold text-gray-800">
+              Recommended Plan
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">{strategy}</span>
+            </h2>
           </div>
-          <h2 className="text-xl font-bold mb-8 text-[#8c5a45] border-b-2 border-dashed border-[#e6c1a8] pb-3 relative z-10">RECOMMENDED PLAN ({strategy})</h2>
-          
-          <div className="space-y-7 relative z-10">
-            <div className="flex items-center space-x-6 border-b-2 border-[#e6c1a8] pb-6">
-                <span className="text-7xl">🏘️</span>
-                <div>
-                  <h3 className="text-gray-600 text-sm mb-1 font-semibold">Best option market</h3>
-                  <p className="text-2xl text-[#8c5a45] font-bold">
-                    {activePlan?.lines && activePlan.lines.length > 0 ? activePlan.lines[0].market_name : "Pilih dan klik Find Best Plan"}
-                  </p>
-                </div>
+
+          <div className="p-6 space-y-6">
+            {/* Best market */}
+            <div className="flex items-center gap-4 pb-5 border-b border-gray-100">
+              <span className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-amber-50 border border-amber-100 text-4xl shrink-0">🏘️</span>
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Best Option Market</p>
+                <p className="text-xl font-bold text-gray-900">
+                  {activePlan?.lines && activePlan.lines.length > 0 ? activePlan.lines[0].market_name : "Select items & click Find Best Plan"}
+                </p>
+              </div>
             </div>
 
-            <div className="border-l-4 border-[#e6c1a8] pl-5 space-y-4">
-              {activePlan?.lines?.map((line: PlanLine, idx: number) => (
-                <div key={idx} className="flex justify-between items-center bg-[#fefcf8] p-3 rounded-lg border border-[#e6c1a8]">
-                  <div className="flex items-center space-x-3">
-                      <span>🛒</span>
+            {/* Plan lines */}
+            {activePlan?.lines && activePlan.lines.length > 0 && (
+              <div className="space-y-2">
+                {activePlan.lines.map((line: PlanLine, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-white border border-gray-200 text-sm">🛒</span>
                       <div>
-                        <p className="text-base font-bold">{line.commodity}</p>
-                        <p className="text-xs text-gray-500">{line.target_date} — Rp {line.expected_price_per_kg?.toLocaleString('id-ID')}/kg</p>
+                        <p className="text-sm font-semibold text-gray-800">{line.commodity}</p>
+                        <p className="text-xs text-gray-500">{line.target_date} · Rp {line.expected_price_per_kg?.toLocaleString('id-ID')}/kg</p>
                       </div>
+                    </div>
+                    <span className="text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-md px-2.5 py-1">{line.qty_kg} kg</span>
                   </div>
-                  <span className="text-lg font-bold">{line.qty_kg} kg</span>
+                ))}
+              </div>
+            )}
+
+            {/* Cost breakdown */}
+            <div className="space-y-2 pt-2">
+              <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200">
+                <span className="text-sm text-gray-600">Expected item cost</span>
+                <span className="text-sm font-semibold text-gray-800">Rp {activePlan?.purchase_cost?.toLocaleString('id-ID') || 0}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-dashed border-gray-200">
+                <span className="text-sm text-gray-600">Transport</span>
+                <span className="text-sm font-semibold text-gray-800">Rp {activePlan?.transport_cost?.toLocaleString('id-ID') || 0}</span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                <span className="text-sm font-bold text-gray-900">Expected Total</span>
+                <span className="text-xl font-bold text-blue-700">Rp {activePlan?.total_expected_cost?.toLocaleString('id-ID') || 0}</span>
+              </div>
+            </div>
+
+            {/* Summary stats */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-sm">💚</span>
+                  <span className="text-xs font-semibold text-green-700 uppercase tracking-wider">Saving vs Baseline</span>
                 </div>
-              ))}
-            </div>
-
-            <div className="space-y-4 pt-4">
-              <div className="flex justify-between items-center border-b-2 border-dashed border-[#e6c1a8] pb-3">
-                <span className="text-gray-600 text-sm">Expected item cost</span>
-                <span className="text-lg font-semibold">Rp {activePlan?.purchase_cost?.toLocaleString('id-ID') || 0}</span>
+                <p className="text-green-800 font-bold text-base">
+                  Rp {planResult?.estimated_saving_vs_baseline?.toLocaleString('id-ID') || 0}
+                </p>
+                <p className="text-green-600 text-xs font-medium">{planResult?.estimated_saving_pct || 0}% saved</p>
               </div>
-              <div className="flex justify-between items-center border-b-2 border-dashed border-[#e6c1a8] pb-3">
-                <span className="text-gray-600 text-sm">Transport</span>
-                <span className="text-lg font-semibold">Rp {activePlan?.transport_cost?.toLocaleString('id-ID') || 0}</span>
-              </div>
-              <div className="flex justify-between items-center border-b-2 border-[#e6c1a8] pb-3 bg-[#fff8e1] p-3 rounded-lg">
-                <span className="text-gray-900 text-base font-bold">Expected total</span>
-                <span className="text-[#8c5a45] font-bold text-2xl">Rp {activePlan?.total_expected_cost?.toLocaleString('id-ID') || 0}</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 pt-6">
-              <div className="bg-[#e8f5e9] p-4 rounded-xl border border-[#a5d6a7]">
-                <span className="block text-gray-700 text-sm mb-1">Saving vs Baseline</span>
-                <span className="text-green-700 font-bold text-lg">
-                  Rp {planResult?.estimated_saving_vs_baseline?.toLocaleString('id-ID') || 0} ({planResult?.estimated_saving_pct || 0}%)
-                </span>
-              </div>
-              <div className="bg-[#fff3e0] p-4 rounded-xl border border-[#ffcc80]">
-                <span className="block text-gray-700 text-sm mb-1">Worst Case Total</span>
-                <span className="text-orange-700 font-bold text-base">Rp {activePlan?.worst_case_total_cost?.toLocaleString('id-ID') || 0}</span>
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-sm">⚠️</span>
+                  <span className="text-xs font-semibold text-orange-700 uppercase tracking-wider">Worst Case</span>
+                </div>
+                <p className="text-orange-800 font-bold text-base">Rp {activePlan?.worst_case_total_cost?.toLocaleString('id-ID') || 0}</p>
+                <p className="text-orange-600 text-xs">Upper bound estimate</p>
               </div>
             </div>
           </div>
         </section>
 
       </main>
-      
-      <footer className="mt-16 pt-6 border-t-2 border-dashed border-[#e6c1a8] text-center text-gray-600">
-          Compfest Market Procurement - Frontend Demo
+
+      <footer className="mt-8 pb-8 text-center text-gray-400 text-xs">
+        Compfest Market Procurement · Frontend Demo
       </footer>
     </div>
   );
