@@ -1,6 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
+
+const MapPicker = dynamic(() => import('../components/MapPicker'), {
+  ssr: false,
+  loading: () => <div className="w-full h-[250px] bg-gray-100 animate-pulse flex items-center justify-center text-gray-400 text-sm font-medium">Loading Map...</div>
+});
 
 const CATALOG = [
   { id: 8, name: "Cabe Merah Keriting", icon: "🌶️" },
@@ -197,30 +203,17 @@ export default function Home() {
           <form onSubmit={handleFindPlan} className="p-6 space-y-6">
             {/* Location */}
             <div>
-              <label className="block mb-1.5 text-sm font-medium text-gray-700">Location Coordinates</label>
-              <div className="flex gap-2">
-                <div className="relative w-1/2">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">Lat</span>
-                  <input
-                    type="number"
-                    step="any"
-                    value={location[0]}
-                    onChange={(e) => setLocation([parseFloat(e.target.value) || 0, location[1]])}
-                    className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Latitude"
-                  />
-                </div>
-                <div className="relative w-1/2">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">Lon</span>
-                  <input
-                    type="number"
-                    step="any"
-                    value={location[1]}
-                    onChange={(e) => setLocation([location[0], parseFloat(e.target.value) || 0])}
-                    className="w-full pl-10 pr-3 py-2.5 bg-white border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    placeholder="Longitude"
-                  />
-                </div>
+              <label className="block mb-1.5 text-sm font-medium text-gray-700">Location Origin</label>
+              <div className="mb-2 text-xs text-gray-500 flex justify-between items-center">
+                <span>Click on the map to set your location coordinates.</span>
+                {typeof location[0] === 'number' && typeof location[1] === 'number' && !isNaN(location[0]) && (
+                  <span className="font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                    {location[0].toFixed(5)}, {location[1].toFixed(5)}
+                  </span>
+                )}
+              </div>
+              <div className="border border-gray-200 rounded-lg overflow-hidden relative z-0">
+                <MapPicker location={location} onChange={(loc) => setLocation(loc)} />
               </div>
             </div>
 
