@@ -16,6 +16,15 @@ const CATALOG = [
   { id: 22, name: "Tomat Buah", icon: "🍅" },
 ];
 
+const MARKET_COORDS: Record<string, [number, number]> = {
+    "Pasar Glodok": [-6.1467, 106.8156],
+    "Pasar Kramat Jati": [-6.2635, 106.8646],
+    "Pasar Perumnas Klender": [-6.2183, 106.9096],
+    "Pasar Kebayoran Lama": [-6.2440, 106.7825],
+    "Pasar Kalideres": [-6.1500, 106.7025],
+    "Pasar Jembatan Lima": [-6.1435, 106.8073],
+};
+
 type PlanLine = {
   commodity: string;
   market_name: string;
@@ -157,6 +166,9 @@ export default function Home() {
     }
   }
 
+  const activeMarketName = activePlan?.lines && activePlan.lines.length > 0 ? activePlan.lines[0].market_name : null;
+  const marketLocation = activeMarketName ? MARKET_COORDS[activeMarketName] : undefined;
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
       {/* HEADER */}
@@ -213,7 +225,7 @@ export default function Home() {
                 )}
               </div>
               <div className="border border-gray-200 rounded-lg overflow-hidden relative z-0">
-                <MapPicker location={location} onChange={(loc) => setLocation(loc)} />
+                <MapPicker location={location} onChange={(loc) => setLocation(loc)} marketLocation={marketLocation} />
               </div>
             </div>
 
