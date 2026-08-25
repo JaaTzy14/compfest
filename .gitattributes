@@ -1,0 +1,2 @@
+.gitattributes text eol=lf
+backend/app/forecasting/models/*_lightgbm_residual.txt text eol=lf
